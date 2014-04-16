@@ -34,7 +34,7 @@ public class Catalog {
         private String PkeyField;
     }
     private HashMap<String,Table> NameHash;
-    private HashMap<int,Table> IdHash;
+    private HashMap<Integer,Table> IdHash;
 
     /**
      * Constructor.
@@ -42,8 +42,8 @@ public class Catalog {
      */
     public Catalog() {
         // some code goes here
-        this.NameHash = new HashMap<String,int>();
-        this.IdHash = new HashMap<String,int>();
+        this.NameHash = new HashMap<String,Integer>();
+        this.IdHash = new HashMap<String,Integer>();
     }
 
     /**
@@ -81,14 +81,14 @@ public class Catalog {
      * Return the id of the table with a specified name,
      * @throws NoSuchElementException if the table doesn't exist
      */
-    public int getTableId(String name) throws NoSuchElementException {
+    public Integer getTableId(String name) throws NoSuchElementException {
         // some code goes here
         Table match = this.NameHash.get(name);
         if (match == null) {
             throw NoSuchElementException;
         } else {
             DbFile file = match.getDbFile();
-            return file.getId();
+            return Integer(file.getId());
         }
         return 0;
     }
