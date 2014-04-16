@@ -17,6 +17,24 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Threadsafe
  */
 public class Catalog {
+    private class Table {
+        public Table(String name, DbFile dbfile, String pkeyField) {
+            this.Name = name;
+            this.File = dbfile;
+            this.PkeyField = pkeyField;
+        }
+        public DbFile getDbFile() {
+            return this.File;
+        }
+        public String getPkeyField() {
+            return this.PkeyField;
+        }
+        private String Name;
+        private DbFile File;        
+        private String PkeyField;
+    }
+    private HashMap<String,Table> NameHash;
+    private HashMap<int,Table> IdHash;
 
     /**
      * Constructor.
@@ -24,6 +42,8 @@ public class Catalog {
      */
     public Catalog() {
         // some code goes here
+        this.NameHash = new HashMap<String,int>();
+        this.IdHash = new HashMap<String,int>();
     }
 
     /**
@@ -37,6 +57,9 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        Table data = new Table(name,file,pkeyField);
+        this.NameHash.put(name,data);
+        this.IdHash.put(file.getId(),data);
     }
 
     public void addTable(DbFile file, String name) {
@@ -60,6 +83,13 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
+        Table match = this.NameHash.get(name);
+        if (match == null) {
+            throw NoSuchElementException;
+        } else {
+            DbFile file = match.getDbFile();
+            return file.getId();
+        }
         return 0;
     }
 
@@ -71,6 +101,13 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
+        Table match = this.IdHash.get(tableid);
+        if (match == null) {
+            throw NoSuchElementException;
+        } else {
+            DbFile file = match.getDbFile();
+            return file.getTupleDesc();
+        }
         return null;
     }
 
@@ -82,11 +119,23 @@ public class Catalog {
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
         // some code goes here
+        Table match = this.IdHash.get(tableid);
+        if (match == null) {
+            throw NoSuchElementException;
+        } else {
+            return match.getDbFile();
+        }
         return null;
     }
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
+        Table match = this.IdHash.get(tableid);
+        if (match == null) {
+            throw NoSuchElementException;
+        } else {
+            return match.getPkeyField();
+        }
         return null;
     }
 
