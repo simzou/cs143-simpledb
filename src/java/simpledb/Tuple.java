@@ -1,7 +1,6 @@
 package simpledb;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -117,6 +116,7 @@ public class Tuple implements Serializable {
      * */
     public void resetTupleDesc(TupleDesc td)
     {
-        // some code goes here
+        m_td = td;
+        m_fields = new Field[td.getSize()];
     }
 }
