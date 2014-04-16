@@ -29,6 +29,9 @@ public class Catalog {
         public String getPkeyField() {
             return this.PkeyField;
         }
+        public String getName() {
+            return this.Name;
+        }
         private String Name;
         private DbFile File;        
         private String PkeyField;
@@ -81,7 +84,7 @@ public class Catalog {
      * Return the id of the table with a specified name,
      * @throws NoSuchElementException if the table doesn't exist
      */
-    public Integer getTableId(String name) throws NoSuchElementException {
+    public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
         Table match = this.NameHash.get(name);
         if (match == null) {
@@ -137,17 +140,25 @@ public class Catalog {
 
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
-        return null;
+        Set<Integer> keys = this.IdHash.keySet();
+        return keys.iterator();
     }
 
     public String getTableName(int id) {
         // some code goes here
-        return null;
+        Table match = this.IdHash.get(id);
+        if (match == null) {
+            throw new NoSuchElementException();
+        } else {
+            return match.getName();
+        }
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+        this.IdHash.clear();
+        this.NameHash.clear();
     }
     
     /**
