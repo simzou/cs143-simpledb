@@ -42,8 +42,8 @@ public class Catalog {
      */
     public Catalog() {
         // some code goes here
-        this.NameHash = new HashMap<String,Integer>();
-        this.IdHash = new HashMap<String,Integer>();
+        this.NameHash = new HashMap<String,Table>();
+        this.IdHash = new HashMap<Integer,Table>();
     }
 
     /**
@@ -85,12 +85,11 @@ public class Catalog {
         // some code goes here
         Table match = this.NameHash.get(name);
         if (match == null) {
-            throw NoSuchElementException;
+            throw new NoSuchElementException();
         } else {
             DbFile file = match.getDbFile();
-            return Integer(file.getId());
+            return file.getId();
         }
-        return 0;
     }
 
     /**
@@ -103,12 +102,11 @@ public class Catalog {
         // some code goes here
         Table match = this.IdHash.get(tableid);
         if (match == null) {
-            throw NoSuchElementException;
+            throw new NoSuchElementException();
         } else {
             DbFile file = match.getDbFile();
             return file.getTupleDesc();
         }
-        return null;
     }
 
     /**
@@ -121,22 +119,20 @@ public class Catalog {
         // some code goes here
         Table match = this.IdHash.get(tableid);
         if (match == null) {
-            throw NoSuchElementException;
+            throw new NoSuchElementException();
         } else {
             return match.getDbFile();
         }
-        return null;
     }
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
         Table match = this.IdHash.get(tableid);
         if (match == null) {
-            throw NoSuchElementException;
+            throw new NoSuchElementException();
         } else {
             return match.getPkeyField();
         }
-        return null;
     }
 
     public Iterator<Integer> tableIdIterator() {
