@@ -78,7 +78,6 @@ public class BufferPool {
     			m_cache.put(pid, newPage);
     			return newPage;
     		}
-    		
     	}
     		
         // some code goes here
