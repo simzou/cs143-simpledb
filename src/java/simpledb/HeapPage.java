@@ -279,7 +279,15 @@ public class HeapPage implements Page {
      */
     public int getNumEmptySlots() {
         // some code goes here
-        return 0;
+        int count = this.getNumTuples();
+        for (int i = 0; i < header.length; i++){
+        	for (int j = 0; j < 8; j++){
+        		if (isSlotUsed(i*8 + j)){
+        			count--;
+        		}
+        	}
+        }
+        return count;
     }
 
     /**
@@ -287,7 +295,11 @@ public class HeapPage implements Page {
      */
     public boolean isSlotUsed(int i) {
         // some code goes here
-        return false;
+    	int byteNum = i / 8;
+    	int bitNum = i % 8;
+    	byte byteWithSlot = header[byteNum];
+    	int mask = 1 << bitNum;
+        return (byteWithSlot&mask) > 0;
     }
 
     /**
@@ -304,7 +316,15 @@ public class HeapPage implements Page {
      */
     public Iterator<Tuple> iterator() {
         // some code goes here
-        return null;
+        ArrayList<Tuple> tuplelist = new ArrayList<Tuple>();
+        for (int i = 0; i < header.length; i++){
+        	for (int j = 0; j < 8; j++){
+        		if (this.isSlotUsed(i*8 + j)){
+        			tuplelist.add(tuples[i*8+j]);
+        		}
+        	}
+        }
+        return tuplelist.iterator();
     }
 
 }
