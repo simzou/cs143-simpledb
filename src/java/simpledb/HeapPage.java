@@ -297,6 +297,9 @@ public class HeapPage implements Page {
         // some code goes here
     	int byteNum = i / 8;
     	int bitNum = i % 8;
+        if (byteNum >= header.length || byteNum < 0) {
+            return false;
+        }
     	byte byteWithSlot = header[byteNum];
     	int bitmask = 1 << bitNum;
         return (byteWithSlot&bitmask) > 0;

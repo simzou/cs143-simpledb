@@ -14,6 +14,7 @@ public class SeqScan implements DbIterator {
     private TransactionId m_transId;
     private int m_tableId;
     private String m_tableAlias;
+    private HeapFile m_hFile;
     private DbFileIterator m_dbiterator;
     
     /**
@@ -36,6 +37,9 @@ public class SeqScan implements DbIterator {
         m_transId = tid;
         m_tableAlias = tableAlias;
         m_tableId = tableid;
+        m_hFile = (HeapFile) Database.getCatalog().getDatabaseFile(tableid);
+        m_dbiterator = new HeapFileIterator(m_hFile.getId(), m_transId, m_hFile.numPages());
+
     }
 
     /**
@@ -77,7 +81,6 @@ public class SeqScan implements DbIterator {
     }
 
     public void open() throws DbException, TransactionAbortedException {
-        m_dbiterator = Database.getCatalog().getDatabaseFile(m_tableId).iterator(m_transId);
         m_dbiterator.open();
     }
 
@@ -104,13 +107,11 @@ public class SeqScan implements DbIterator {
     }
 
     public boolean hasNext() throws TransactionAbortedException, DbException {
-        // some code goes here
         return m_dbiterator.hasNext();
     }
 
     public Tuple next() throws NoSuchElementException,
             TransactionAbortedException, DbException {
-        // some code goes here
         return m_dbiterator.next();
     }
 
@@ -121,6 +122,5 @@ public class SeqScan implements DbIterator {
     public void rewind() throws DbException, NoSuchElementException,
             TransactionAbortedException {
     	m_dbiterator.rewind();
-        // some code goes here
     }
 }

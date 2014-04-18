@@ -18,6 +18,7 @@ HeapFile:
 
 SeqScan:
 
-Difficulties: I got the idea for implementing hash codes by hashing string representations from asking the professor in office hours, which I don't think I would have thought of on my own. Understanding to do the bit manipulation in HeapPage The HeapFileIterator was particularly challenging.
+Changes to API: No changes to the interfaces were made
 
-Changes to API: Created a public HeapFileIterator class
+Difficulties: We spent about 16 hours on the project. We got the idea for implementing hash codes by hashing string representations from asking the professor in office hours. Understanding how to do the bit manipulation in HeapPage was took some time. The HeapFile and HeapFileIterator were probably the most complex parts of the assignment and getting used to the Java syntax for working with File I/O, exceptions, and Random Access. 
+
