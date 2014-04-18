@@ -289,6 +289,13 @@ public class HeapPage implements Page {
     }
 
     /**
+     * Returns number of available tuples
+    **/
+    public int availableTuples() {
+        return getNumTuples() - getNumEmptySlots();
+    }
+
+    /**
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {
@@ -318,10 +325,6 @@ public class HeapPage implements Page {
     public Iterator<Tuple> iterator() {
         // some code goes here
         return new HeapPageIterator(this);
-    }
-
-    public int availableTuples() {
-        return getNumTuples() - getNumEmptySlots();
     }
 }
 
