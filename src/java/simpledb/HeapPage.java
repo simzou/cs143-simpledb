@@ -298,8 +298,8 @@ public class HeapPage implements Page {
     	int byteNum = i / 8;
     	int bitNum = i % 8;
     	byte byteWithSlot = header[byteNum];
-    	int mask = 1 << bitNum;
-        return (byteWithSlot&mask) > 0;
+    	int bitmask = 1 << bitNum;
+        return (byteWithSlot&bitmask) > 0;
     }
 
     /**
@@ -319,8 +319,9 @@ public class HeapPage implements Page {
         ArrayList<Tuple> tuplelist = new ArrayList<Tuple>();
         for (int i = 0; i < header.length; i++){
         	for (int j = 0; j < 8; j++){
-        		if (this.isSlotUsed(i*8 + j)){
-        			tuplelist.add(tuples[i*8+j]);
+        		int index = i*8 + j;
+        		if (this.isSlotUsed(index)){
+        			tuplelist.add(tuples[index]);
         		}
         	}
         }
