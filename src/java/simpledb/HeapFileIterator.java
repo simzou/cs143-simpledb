@@ -26,7 +26,7 @@ public class HeapFileIterator implements DbFileIterator {
                 return false;
             }
         } else {
-            throw new DbException("");
+            return false;
         }
     }
 
@@ -38,7 +38,7 @@ public class HeapFileIterator implements DbFileIterator {
                     return this.curIterator.next();
                 } else {
                     this.curPageNum++;
-                    this.curPageId = new HeapPageId(this.HeapFileId, curPageNum);
+                    this.curPageId = new HeapPageId(this.HeapFileId, this.curPageNum);
                     this.curPage = (HeapPage) Database.getBufferPool().getPage(this.tid, this.curPageId, Permissions.READ_WRITE);
                     this.curIterator = this.curPage.iterator();
                     return this.curIterator.next();
@@ -47,7 +47,7 @@ public class HeapFileIterator implements DbFileIterator {
                 throw new NoSuchElementException();
             }
         } else {
-            throw new DbException("");
+            throw new NoSuchElementException();
         }
     }
 
