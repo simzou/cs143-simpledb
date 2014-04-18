@@ -22,8 +22,12 @@ public class HeapFile implements DbFile {
      *            the file that stores the on-disk backing store for this heap
      *            file.
      */
+    private File file;
+    private TupleDesc td;
     public HeapFile(File f, TupleDesc td) {
         // some code goes here
+        this.file = f;
+        this.td = td;
     }
 
     /**
@@ -33,7 +37,7 @@ public class HeapFile implements DbFile {
      */
     public File getFile() {
         // some code goes here
-        return null;
+        return this.file;
     }
 
     /**
@@ -47,7 +51,8 @@ public class HeapFile implements DbFile {
      */
     public int getId() {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return this.file.getAbsoluteFile().hashCode();
+        //throw new UnsupportedOperationException("implement this");
     }
 
     /**
@@ -57,13 +62,19 @@ public class HeapFile implements DbFile {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return this.td;
+        //throw new UnsupportedOperationException("implement this");
     }
 
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
         // some code goes here
-        return null;
+        RandomAccessFile f = RandomAccessFile(this.file,"r");
+        int offset = BufferPool.PAGE_SIZE * pid.pageNumber();
+        byte[] data = new byte[BufferPool.PAGE_SIZE];
+        f.seek(offset);
+        f.readFully(data);
+        return HeapPage(pid, data);
     }
 
     // see DbFile.java for javadocs
