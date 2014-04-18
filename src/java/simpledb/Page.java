@@ -60,5 +60,5 @@ public interface Page {
      */
     public void setBeforeImage();
 
-    public Iterator<Tuple> iterator();
+    // public Iterator<Tuple> iterator();
 }
