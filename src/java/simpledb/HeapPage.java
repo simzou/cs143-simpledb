@@ -75,7 +75,7 @@ public class HeapPage implements Page {
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      */
     private int getHeaderSize() {        
-        return (int) Math.ceil(this.getNumTuples() / 8);
+        return (int) Math.ceil(((double) this.getNumTuples()) / 8);
     }
     
     /** Return a view of this page before it was modified
@@ -279,13 +279,11 @@ public class HeapPage implements Page {
      */
     public int getNumEmptySlots() {
         // some code goes here
-        int count = this.getNumTuples();
-        for (int i = 0; i < header.length; i++){
-        	for (int j = 0; j < 8; j++){
-        		if (isSlotUsed(i*8 + j)){
-        			count--;
-        		}
-        	}
+        int count = 0; 
+        for (int i = 0; i< this.getNumTuples(); i++) {
+            if (!this.isSlotUsed(i)) {
+                count++;
+            }
         }
         return count;
     }
@@ -322,5 +320,8 @@ public class HeapPage implements Page {
         return new HeapPageIterator(this);
     }
 
+    public int availableTuples() {
+        return getNumTuples() - getNumEmptySlots();
+    }
 }
 

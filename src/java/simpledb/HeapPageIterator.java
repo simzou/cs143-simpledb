@@ -7,7 +7,7 @@ public class HeapPageIterator implements Iterator<Tuple> {
     public HeapPageIterator(HeapPage heapPage) {
         this.heapPage = heapPage;
         this.curTuple = 0;
-        this.numTuples = heapPage.tuples.length - heapPage.getNumEmptySlots();
+        this.numTuples = heapPage.availableTuples();
     }
 
     public boolean hasNext() {
