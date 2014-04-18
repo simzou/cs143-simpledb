@@ -1,5 +1,7 @@
 package simpledb;
 
+import java.util.*;
+
 public class HeapFileIterator implements DbFileIterator {
     public HeapFileIterator(int HeapFileId, TransactionId tid, int numPages) {
         this.HeapFileId = HeapFileId;
@@ -11,7 +13,7 @@ public class HeapFileIterator implements DbFileIterator {
     public void open() throws DbException, TransactionAbortedException {
         this.curPageNum = 0;
         this.curPageId = new HeapPageId(this.HeapFileId, this.curPageNum);
-        this.curPage = BufferPool.getPage(this.tid, this.curPageId, Permissions.READ_WRITE);
+        this.curPage = (HeapPage) Database.getBufferPool().getPage(this.tid, this.curPageId, Permissions.READ_WRITE);
         this.curIterator = this.curPage.iterator();
         this.opened = true;
     }
@@ -24,7 +26,7 @@ public class HeapFileIterator implements DbFileIterator {
                 return false;
             }
         } else {
-            throw new DbException();
+            throw new DbException("");
         }
     }
 
@@ -37,7 +39,7 @@ public class HeapFileIterator implements DbFileIterator {
                 } else {
                     this.curPageNum++;
                     this.curPageId = new HeapPageId(this.HeapFileId, curPageNum);
-                    this.curPage = BufferPool.getPage(this.tid, this.curPageId, Permissions.READ_WRITE);
+                    this.curPage = (HeapPage) Database.getBufferPool().getPage(this.tid, this.curPageId, Permissions.READ_WRITE);
                     this.curIterator = this.curPage.iterator();
                     return this.curIterator.next();
                 }
@@ -45,7 +47,7 @@ public class HeapFileIterator implements DbFileIterator {
                 throw new NoSuchElementException();
             }
         } else {
-            throw new DbException();
+            throw new DbException("");
         }
     }
 
@@ -53,7 +55,7 @@ public class HeapFileIterator implements DbFileIterator {
         if (this.opened) {
             this.open();
         } else {
-            throw new DbException();
+            throw new DbException("");
         }
     }
 
@@ -65,8 +67,8 @@ public class HeapFileIterator implements DbFileIterator {
     private int HeapFileId; 
     private TransactionId tid;
     private int curPageNum;
-    private PageId curPageId;
-    private Page curPage;
+    private HeapPageId curPageId;
+    private HeapPage curPage;
     private Iterator<Tuple> curIterator;
     private int numPages; 
 }
