@@ -1,4 +1,7 @@
-Collaborators: Calvin Chan and Simon Zou
+Collaborators: 
+
+Calvin Chan: 
+Simon Zou: 804347338
 
 TupleDesc: This was implemented using a vector of TDItems so as to have random access for the getFieldName and getFieldType functions. hashCode is implemented by hashing the toString.
 
