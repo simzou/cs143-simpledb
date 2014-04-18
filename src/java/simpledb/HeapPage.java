@@ -319,16 +319,7 @@ public class HeapPage implements Page {
      */
     public Iterator<Tuple> iterator() {
         // some code goes here
-        ArrayList<Tuple> tuplelist = new ArrayList<Tuple>();
-        for (int i = 0; i < header.length; i++){
-        	for (int j = 0; j < 8; j++){
-        		int index = i*8 + j;
-        		if (this.isSlotUsed(index)){
-        			tuplelist.add(tuples[index]);
-        		}
-        	}
-        }
-        return tuplelist.iterator();
+        return new HeapPageIterator(this);
     }
 
 }

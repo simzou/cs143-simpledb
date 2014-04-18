@@ -67,7 +67,7 @@ public class HeapFileIterator implements DbFileIterator {
     private int HeapFileId; 
     private TransactionId tid;
     private int curPageNum;
-    private HeapPageId curPageId;
+    private PageId curPageId;
     private HeapPage curPage;
     private Iterator<Tuple> curIterator;
     private int numPages; 

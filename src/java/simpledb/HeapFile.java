@@ -75,6 +75,10 @@ public class HeapFile implements DbFile {
             RandomAccessFile f = new RandomAccessFile(this.file,"r");
             int offset = BufferPool.PAGE_SIZE * pid.pageNumber();
             byte[] data = new byte[BufferPool.PAGE_SIZE];
+            if (offset + BufferPool.PAGE_SIZE > f.length()) {
+                System.err.println("Page offset exceeds max size, error!");
+                System.exit(1);
+            }
             f.seek(offset);
             f.readFully(data);
             return new HeapPage((HeapPageId) pid, data);

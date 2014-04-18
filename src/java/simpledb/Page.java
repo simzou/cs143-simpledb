@@ -1,5 +1,8 @@
 package simpledb;
 
+import java.util.*;
+import java.io.*;
+
 /**
  * Page is the interface used to represent pages that are resident in the
  * BufferPool.  Typically, DbFiles will read and write pages from disk.
@@ -56,4 +59,6 @@ public interface Page {
      * copy current content to the before image.
      */
     public void setBeforeImage();
+
+    public Iterator<Tuple> iterator();
 }

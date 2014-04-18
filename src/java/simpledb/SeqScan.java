@@ -14,7 +14,7 @@ public class SeqScan implements DbIterator {
     private TransactionId m_transId;
     private int m_tableId;
     private String m_tableAlias;
-    private HeapFile m_hFile;
+    private DbFile m_hFile;
     private DbFileIterator m_dbiterator;
     
     /**
@@ -37,9 +37,9 @@ public class SeqScan implements DbIterator {
         m_transId = tid;
         m_tableAlias = tableAlias;
         m_tableId = tableid;
-        m_hFile = (HeapFile) Database.getCatalog().getDatabaseFile(tableid);
-        m_dbiterator = new HeapFileIterator(m_hFile.getId(), m_transId, m_hFile.numPages());
-
+        m_hFile = Database.getCatalog().getDatabaseFile(tableid);
+        //m_dbiterator = new HeapFileIterator(m_hFile.getId(), m_transId, m_hFile.numPages());
+        m_dbiterator = m_hFile.iterator(m_transId);
     }
 
     /**
