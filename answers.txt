@@ -4,5 +4,20 @@ TupleDesc: This was implemented using a vector of TDItems so as to have random a
 
 Tuple: This is implemented with an array of Fields so as to have random access for setting and getting fields. The iterator is implemented by wrapping the array in a Java ArrayList and returning the iterator (had to look this up).
 
-Catalog: 
+Catalog: A private Table class is written to store the name and file. Two HashMaps are used, one to map the table name to the table and the other to map the table id to the table. This allows for constant time access for the various getter methods (getTableId, getTupleDesc, etc.)
 
+BufferPool: The cache is implemented as a HashMap that maps PageIds to Pages. This allows the getPage function to check in constant time if the Page is in the cache and add it if necessary.
+
+HeapPageId: equals compares the two ids and hashCode concatenates the two ids into a string and uses Java's built in hashCode for strings. No complex data structures were necessary.
+
+RecordId: Similar to HeapPageId, equals compares the PageId and tuple number to determine equality and hashCode concatenates the two ids into a string and uses Java's built in hashCode for strings. No complex data structures were necessary.
+
+HeapPage: getNumTuples and getHeaderSize are implemented according to the spec. isSlotUsed finds the particular bit in a particular byte and then checks if that bit is on. getNumEmptySlots then iterates through the header using isSlotUsed to the get the count. The iterator is made by iterating through the header again, and putting into an ArrayList the tuples corresponding to a used slot and returning the ArrayList's iterator.
+
+HeapFile:
+
+SeqScan:
+
+Difficulties: I got the idea for implementing hash codes by hashing string representations from asking the professor in office hours, which I don't think I would have thought of on my own. Understanding to do the bit manipulation in HeapPage The HeapFileIterator was particularly challenging.
+
+Changes to API: Created a public HeapFileIterator class
