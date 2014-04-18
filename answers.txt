@@ -1,0 +1,8 @@
+Collaborators: Calvin Chan and Simon Zou
+
+TupleDesc: This was implemented using a vector of TDItems so as to have random access for the getFieldName and getFieldType functions. hashCode is implemented by hashing the toString.
+
+Tuple: This is implemented with an array of Fields so as to have random access for setting and getting fields. The iterator is implemented by wrapping the array in a Java ArrayList and returning the iterator (had to look this up).
+
+Catalog: 
+
