@@ -1,0 +1,6 @@
+Collaborators: 
+
+Calvin Chan: 304144970
+Simon Zou: 804347338
+
+Join.java: We used a nested simple nested loop join.
