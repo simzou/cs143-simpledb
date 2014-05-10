@@ -63,7 +63,7 @@ public class IntegerAggregator implements Aggregator {
      */
     public void mergeTupleIntoGroup(Tuple tup) {
         // some code goes here
-    	Field tupleGroupByField = tup.getField(m_groupByFieldIndex);
+    	Field tupleGroupByField = (m_groupByFieldIndex == Aggregator.NO_GROUPING) ? null : tup.getField(m_groupByFieldIndex);
     	
     	if (!m_aggregateData.containsKey(tupleGroupByField))
     	{
@@ -101,8 +101,18 @@ public class IntegerAggregator implements Aggregator {
 
     private TupleDesc createGroupByTupleDesc()
     {
-    	String[] names = {"groupValue", "aggregateValue"};
-    	Type[] types = {m_groupByFieldType, Type.INT_TYPE};
+    	String[] names;
+    	Type[] types;
+    	if (m_groupByFieldIndex == Aggregator.NO_GROUPING)
+    	{
+    		names = new String[] {"aggregateValue"};
+    		types = new Type[] {Type.INT_TYPE};
+    	}
+    	else
+    	{
+    		names = new String[] {"groupValue", "aggregateValue"};
+    		types = new Type[] {m_groupByFieldType, Type.INT_TYPE};
+    	}
     	return new TupleDesc(types, names);
     }
     
