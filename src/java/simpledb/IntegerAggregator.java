@@ -141,8 +141,13 @@ public class IntegerAggregator implements Aggregator {
     			aggregateVal = m_aggregateData.get(group);
     		}
     		addMe = new Tuple(tupledesc);
-    		addMe.setField(0, group);
-    		addMe.setField(1, new IntField(aggregateVal));
+    		if (m_groupByFieldIndex == Aggregator.NO_GROUPING){
+    			addMe.setField(0, new IntField(aggregateVal));
+    		}
+    		else {
+        		addMe.setField(0, group);
+        		addMe.setField(1, new IntField(aggregateVal));    			
+    		}
     		tuples.add(addMe);
     	}
     	return new TupleIterator(tupledesc, tuples);
