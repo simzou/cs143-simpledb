@@ -157,7 +157,99 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public DbFileIterator iterator(TransactionId tid) {
         // some code goes here
-        return new HeapFileIterator(this.id,tid,this.numPages());
+        return new HeapFileIterator(this, tid);
+    }
+
+    /**
+     * Helper class that implements the Java Iterator for tuples on a HeapFile
+     */
+    class HeapFileIterator extends AbstractDbFileIterator {
+
+    	/**
+    	 * An iterator to tuples for a particular page.
+    	 */
+        Iterator<Tuple> m_tupleIt;
+       
+        /**
+         * The current number of the page this class is iterating through.
+         */
+        int m_currentPageNumber;
+
+        /**
+         * The transaction id for this iterator.
+         */
+        TransactionId m_tid;
+        
+        /**
+         * The underlying heapFile.
+         */
+        HeapFile m_heapFile;
+
+        /**
+         * Set local variables for HeapFile and Transactionid
+         * @param hf The underlying HeapFile.
+         * @param tid The transaction ID.
+         */
+        public HeapFileIterator(HeapFile hf, TransactionId tid) {            
+        	m_heapFile = hf;
+            m_tid = tid;
+        }
+
+        /**
+         * Open the iterator, must be called before readNext.
+         */
+        public void open() throws DbException, TransactionAbortedException {
+            m_currentPageNumber = -1;
+        }
+
+        @Override
+        protected Tuple readNext() throws TransactionAbortedException, DbException {
+            
+        	// If the current tuple iterator has no more tuples.
+        	if (m_tupleIt != null && !m_tupleIt.hasNext()) {	
+                m_tupleIt = null;
+            }
+
+        	// Keep trying to open a tuple iterator until we find one of run out of pages.
+            while (m_tupleIt == null && m_currentPageNumber < m_heapFile.numPages() - 1) {
+                m_currentPageNumber++;		// Go to next page.
+                
+                // Get the iterator for the current page
+                HeapPageId currentPageId = new HeapPageId(m_heapFile.getId(), m_currentPageNumber);
+                                
+                HeapPage currentPage = (HeapPage) Database.getBufferPool().getPage(m_tid,
+                        currentPageId, Permissions.READ_ONLY);
+                m_tupleIt = currentPage.iterator();
+                
+                // Make sure the iterator has tuples in it
+                if (!m_tupleIt.hasNext())
+                    m_tupleIt = null;
+            }
+
+            // Make sure we found a tuple iterator
+            if (m_tupleIt == null)
+                return null;
+            
+            // Return the next tuple.
+            return m_tupleIt.next();
+        }
+
+        /**
+         * Rewind closes the current iterator and then opens it again.
+         */
+        public void rewind() throws DbException, TransactionAbortedException {
+            close();
+            open();
+        }
+
+        /**
+         * Close the iterator, which resets the counters so it can be opened again.
+         */
+        public void close() {
+            super.close();
+            m_tupleIt = null;
+            m_currentPageNumber = Integer.MAX_VALUE;
+        }
     }
 
 }
