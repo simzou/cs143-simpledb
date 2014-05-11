@@ -37,8 +37,8 @@ public class Insert extends Operator {
     	m_tableId = tableid;
     	m_inserted = false;
     	
-    	String[] names = {"Inserted"};
-    	Type[] types = {Type.INT_TYPE};
+    	String[] names = new String[] {"Inserted"};
+    	Type[] types = new Type[] {Type.INT_TYPE};
     	m_resultTupleDesc = new TupleDesc(types, names);
 
     }
@@ -82,7 +82,7 @@ public class Insert extends Operator {
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         // some code goes here
     	if (m_inserted) return null;
-    	int count = 0;
+    	int insertedCount = 0;
     	while (m_it.hasNext())
     	{
     		Tuple tup = m_it.next();
@@ -94,10 +94,10 @@ public class Insert extends Operator {
     		{
     			throw new DbException("IO Exception on tuple insertion");
     		}
-    		count++;
+    		insertedCount++;
     	}
     	Tuple resultTuple = new Tuple(m_resultTupleDesc);
-    	resultTuple.setField(0, new IntField(count));
+    	resultTuple.setField(0, new IntField(insertedCount));
     	m_inserted = true;
     	return resultTuple;
     }
