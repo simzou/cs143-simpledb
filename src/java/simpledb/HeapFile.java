@@ -110,9 +110,9 @@ public class HeapFile implements DbFile {
     	for (int i = 0; i < this.numPages(); i++)
     	{
     		PageId pid = new HeapPageId(this.getId(), i);
-    		HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
-        	if (page.getNumEmptySlots() > 0)
-        		return page;
+    		HeapPage hpage = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
+        	if (hpage.getNumEmptySlots() > 0)
+        		return hpage;
     	}
     	return null;
     }
@@ -122,11 +122,11 @@ public class HeapFile implements DbFile {
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
         // ArrayList<Page> modifiedPages = new ArrayList<Page>();
-        HeapPage page = getFreePage(tid);
-        if (page != null)
+        HeapPage hpage = getFreePage(tid);
+        if (hpage != null)
         {
-        	page.insertTuple(t);
-        	return new ArrayList<Page> (Arrays.asList(page));
+        	hpage.insertTuple(t);
+        	return new ArrayList<Page> (Arrays.asList(hpage));
         }
         
         // no empty pages found, so create a new one
@@ -134,10 +134,12 @@ public class HeapFile implements DbFile {
         HeapPage newHeapPage = new HeapPage(newHeapPageId, HeapPage.createEmptyPageData());
         newHeapPage.insertTuple(t);
         
-        RandomAccessFile raf = new RandomAccessFile(this.file, "rw");
-        raf.seek(BufferPool.getPageSize() * this.numPages());
-        raf.write(newHeapPage.getPageData(), 0, BufferPool.getPageSize());
-        raf.close();
+        RandomAccessFile randomAccessFile = new RandomAccessFile(this.file, "rw");
+        int offset = BufferPool.PAGE_SIZE * this.numPages();
+        randomAccessFile.seek(offset);
+        byte[] newHeapPageData = newHeapPage.getPageData();
+        randomAccessFile.write(newHeapPageData, 0, BufferPool.PAGE_SIZE);
+        randomAccessFile.close();
         
         return new ArrayList<Page> (Arrays.asList(newHeapPage));
         // not necessary for lab1
@@ -148,9 +150,9 @@ public class HeapFile implements DbFile {
             TransactionAbortedException {
         // some code goes here
         PageId pid = t.getRecordId().getPageId();
-        HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
-        page.deleteTuple(t);
-        return new ArrayList<Page> (Arrays.asList(page));
+        HeapPage hpage = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_WRITE);
+        hpage.deleteTuple(t);
+        return new ArrayList<Page> (Arrays.asList(hpage));
         // not necessary for lab1
     }
 
