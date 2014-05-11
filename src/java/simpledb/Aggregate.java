@@ -55,10 +55,10 @@ public class Aggregate extends Operator {
     	switch(aggregateType)
     	{
     		case INT_TYPE: 
-    			m_aggregator = new IntegerAggregator(m_groupByFieldIndex, groupByType, m_aggregateFieldIndex ,m_op);
+    			m_aggregator = new IntegerAggregator(m_groupByFieldIndex, groupByType, m_aggregateFieldIndex, m_op);
     			break;
     		case STRING_TYPE:
-    			m_aggregator = new StringAggregator(m_groupByFieldIndex, groupByType, m_aggregateFieldIndex ,m_op);
+    			m_aggregator = new StringAggregator(m_groupByFieldIndex, groupByType, m_aggregateFieldIndex, m_op);
     			break;
     		default:
     			assert(false);
