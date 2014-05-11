@@ -71,14 +71,12 @@ public class BufferPool {
     	}
     	else {
     		if (m_cache.size() >= m_maxNumPages){
-    			throw new DbException("BufferPool size reached");
+    			evictPage();
     		}
-    		else {
-    			DbFile dbfile = Database.getCatalog().getDatabaseFile(pid.getTableId());
-    			Page newPage = dbfile.readPage(pid);
-    			m_cache.put(pid, newPage);
-    			return newPage;
-    		}
+			DbFile dbfile = Database.getCatalog().getDatabaseFile(pid.getTableId());
+			Page newPage = dbfile.readPage(pid);
+			m_cache.put(pid, newPage);
+			return newPage;
     	}
     		
         // some code goes here
@@ -189,7 +187,8 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
-
+    	for (PageId pid : m_cache.keySet())
+    		flushPage(pid);
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -209,6 +208,14 @@ public class BufferPool {
     private synchronized  void flushPage(PageId pid) throws IOException {
         // some code goes here
         // not necessary for lab1
+    	Page pageToFlush = m_cache.get(pid);
+    	TransactionId dirtyTransactionId = pageToFlush.isDirty();
+    	if (dirtyTransactionId != null)
+    	{
+    		DbFile databaseFile = Database.getCatalog().getDatabaseFile(pid.getTableId());
+    		databaseFile.writePage(pageToFlush);
+    		pageToFlush.markDirty(false, dirtyTransactionId);
+    	}
     }
 
     /** Write all pages of the specified transaction to disk.
@@ -225,6 +232,23 @@ public class BufferPool {
     private synchronized  void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
+    	boolean pageEvicted = false;
+    	for (PageId pid : m_cache.keySet())
+    	{
+    		try 
+    		{
+        		flushPage(pid);
+        		m_cache.remove(pid);
+        		pageEvicted = true;
+        		break;
+    		}
+    		catch (IOException e)
+    		{
+    			throw new DbException("Error trying to flush page during eviction.");
+    		}
+    	}
+    	if (!pageEvicted)
+    		throw new DbException("no pages could be evicted");
     }
 
 }
