@@ -1,0 +1,33 @@
+Collaborators: 
+
+Calvin Chan: 304144970
+Simon Zou: 804347338
+Ethan Schreiber: The iterator in HeapFile.java is the one from the lab1 solution by Ethan/the TA. 
+
+Predicate.java: This file only had some getter/setter methods and made use of Field's compare method
+
+JoinPredicate.java: This file was also very simple and made use of Field's compare function
+
+Filter.java: The only nontrival function here was fetchNext, which iterated through the child iterator, applying the predicate filter function to see do the selection.
+
+Join.java: The join is implemented as a simple nested loops join, which is slow, but was easiest to implement and for me to understand. The join is done by iterating through the values of the column of the first join field and using the predicate to determine if it should join based on the join field on the right. If so, a new TupleDesc is made and the two corresponding tuples are merged.
+
+IntegerAggregator.java, StringAggregator.java: The IntegerAggregator was implemented using a HashMap, mapping the group to values. The mergeTupleIntoGroup function would add the new tuple values into the map in constant time, which easily keeps track of things like Sum and Count. For Min and Max, the values currently in the map were compared against them to see if they would be replaced. The slightly trickier one to deal with was Average, since you can't compute it until you know the total number of elements in the group. For that, a sum and a count were tabulated using 2 hash maps and then the average was calculated in the iterator. The iterator is then implemented by iterating through the HashMap, creating the appropriate tuples, adding it to an ArrayList and returning the list's iterator. The StringAggregator was implemented in the same way, but only supports count. 
+
+Aggregate.java: Aggregate uses the Aggregators written above by grouping and doing the aggregate calculations for all the tuples in the child iterator. It's iterator then uses the Aggregator's iterator to get the results of a Group By query.
+
+HeapPage.java: insertTuple does a linear search of the page through the header using isSlotUsed to find a free space and then inserts a tuple into that slot, updating the header accordingly. deleteTuple gets the recordId from the tuple to be deleted and removes it from the tuples array and updates the header as well.
+
+HeapFile.java: insertTuple looks linearly through the file for a page with a free slot and if it does not find one, creates a new page, inserts the tuple into that page (with HeapPage's insertTuple) and appends it to the file. deleteTuple determines the pageId from the tuple to be deleted and uses HeapPage's deleteTuple function to delete the tuple.
+
+Insert.java, Delete.java: fetchNext is implemented by iterating through the child iterator and using the BufferPool insert/deleteTuple function (described later). A counter is used to keep track of how many items were inputted or deleted and then is returned as a one element tuple.
+
+BufferPool.java: insert and deleteTuple make use of HeapFile.java's insert and deleteTuple functions. They get a list of modified pages from those functions and then mark them as dirty and update them in the cache.
+
+Page Eviction Policy: We iterate through the cache and evict the first page we are able to flush to disk. Since the spec did not require any special algorithm, this was the simplest thing to do and will just evict (probably) one of the first pages returned by the cache's iterator, which is a HashMap. Though simple to implement and easy to understand, it is not optimized for performance at all and relies on what order Java's HashMap iterator traverses through the BufferPool.
+
+Changes to API: None were made.
+
+Missing elements: All the unit/system tests passed.
+
+Difficulties/Time: The assignment took about 16 hours to do. For the classes that inherited from Operator, I didn't immediately figure out the get and set children functions were supposed to do until I read the javadocs. I'm still not clear why it's called "child". The aggregators made me think quite a bit about how to deal with all the different possible aggregate functions in a nice way. I'm still not very familiar with bit manipulation so updating the headers in HeapPage was challenging as well. The systemtest for Delete.java would not work (kept getting NullPointerExceptions) until I replaced our HeapFileIterator with the TA's solution. I'm still not sure why the original didn't work but it took some time to figure out the problem. 
