@@ -1,51 +1,44 @@
 package simpledb;
 
-/**
- * A class to represent a fixed-width histogram over a single String-based
- * field.
+/** A class to represent a fixed-width histogram over a single String-based field.
  */
 public class StringHistogram {
-    final IntHistogram hist;
+    IntHistogram hist;
 
-    /**
-     * Create a new StringHistogram with a specified number of buckets.
-     * <p>
-     * Our implementation is written in terms of an IntHistogram by converting
-     * each String to an integer.
-     * 
-     * @param buckets
-     *            the number of buckets
-     */
+    /** Create a new StringHistogram with a specified number of buckets.
+        <p>
+        Our implementation is written in terms of an IntHistogram by converting
+        each String to an integer.
+        @param buckets the number of buckets */
     public StringHistogram(int buckets) {
         hist = new IntHistogram(buckets, minVal(), maxVal());
     }
 
-    /**
-     * Convert a string to an integer, with the property that if the return
-     * value(s1) < return value(s2), then s1 < s2
-     */
+    /** Convert a string to an integer, with the property that 
+        if the return value(s1) < return value(s2), then s1 < s2
+    */
     private int stringToInt(String s) {
-        int i;
+        int i ;
         int v = 0;
-        for (i = 3; i >= 0; i--) {
-            if (s.length() > 3 - i) {
-                int ci = (int) s.charAt(3 - i);
+        for (i = 3; i >= 0;i--) {
+            if (s.length() > 3-i) {
+                int ci = (int)s.charAt(3-i);
                 v += (ci) << (i * 8);
-            }
+            } 
         }
-
+        
         // XXX: hack to avoid getting wrong results for
         // strings which don't output in the range min to max
         if (!(s.equals("") || s.equals("zzzz"))) {
-            if (v < minVal()) {
-                v = minVal();
-            }
-
-            if (v > maxVal()) {
-                v = maxVal();
-            }
+	        if (v < minVal()) {
+	        	v = minVal();
+	        } 
+	        
+	        if (v > maxVal()) {
+	        	v = maxVal();
+	        }
         }
-
+        
         return v;
     }
 
@@ -65,28 +58,25 @@ public class StringHistogram {
         hist.addValue(val);
     }
 
-    /**
-     * Estimate the selectivity (as a double between 0 and 1) of the specified
-     * predicate over the specified string
-     * 
-     * @param op
-     *            The operation being applied
-     * @param s
-     *            The string to apply op to
-     */
+    /** Estimate the selectivity (as a double between 0 and 1) of the specified predicate over the specified string 
+        @param op The operation being applied
+        @param s The string to apply op to 
+    */
     public double estimateSelectivity(Predicate.Op op, String s) {
         int val = stringToInt(s);
         return hist.estimateSelectivity(op, val);
     }
-
+    
     /**
-     * @return the average selectivity of this histogram.
-     * 
-     *         This is not an indispensable method to implement the basic join
-     *         optimization. It may be needed if you want to implement a more
-     *         efficient optimization
+     * @return
+     *     the average selectivity of this histogram.
+     *     
+     *     This is not an indispensable method to implement the basic
+     *     join optimization. It may be needed if you want to
+     *     implement a more efficient optimization
      * */
-    public double avgSelectivity() {
+    public double avgSelectivity()
+    {
         return hist.avgSelectivity();
     }
 }

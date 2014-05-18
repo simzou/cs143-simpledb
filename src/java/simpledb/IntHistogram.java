@@ -66,6 +66,7 @@ public class IntHistogram {
      * @return A string describing this histogram, for debugging purposes
      */
     public String toString() {
+
         // some code goes here
         return null;
     }

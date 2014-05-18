@@ -276,6 +276,7 @@ public class Parser {
     public Query handleQueryStatement(ZQuery s, TransactionId tId)
             throws TransactionAbortedException, DbException, IOException,
             simpledb.ParsingException, Zql.ParseException {
+        // and run it
         Query query = new Query(tId);
 
         LogicalPlan lp = parseQueryLogicalPlan(tId, s);
