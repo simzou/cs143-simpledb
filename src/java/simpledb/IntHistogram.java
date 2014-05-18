@@ -3,6 +3,10 @@ package simpledb;
 /** A class to represent a fixed-width histogram over a single integer-based field.
  */
 public class IntHistogram {
+    private int[] buckets;
+    private int numBuckets;
+    private int mod;
+    private int totalValues;
 
     /**
      * Create a new IntHistogram.
@@ -22,6 +26,10 @@ public class IntHistogram {
      */
     public IntHistogram(int buckets, int min, int max) {
     	// some code goes here
+        this.buckets = new int[buckets];
+        this.numBuckets = buckets;
+        this.mod = Math.ciel((max - min)/buckets);
+        this.totalValues = 0;
     }
 
     /**
@@ -30,6 +38,10 @@ public class IntHistogram {
      */
     public void addValue(int v) {
     	// some code goes here
+        // div should be casted back to an int representing array index (bucket num)
+        int bucket = v/this.mod;
+        this.buckets[bucket]++;
+        this.totalValues++;
     }
 
     /**
@@ -43,9 +55,53 @@ public class IntHistogram {
      * @return Predicted selectivity of this particular operator and value
      */
     public double estimateSelectivity(Predicate.Op op, int v) {
-
     	// some code goes here
-        return -1.0;
+        switch(op) {
+            case EQUALS:
+            case LIKE:
+                return estimateSelectivityEquals(v);
+            case GREATER_THAN:
+            case LESS_THAN:
+                return estimateSelectivityInequality(op,v);
+            case GREATER_THAN_OR_EQ:
+            case LESS_THAN_OR_EQ:
+                return estimateSelectivityEquals(v) + estimateSelectivityInequality(op,v);
+            case NOT_EQUALS:
+                return estimateSelectivityInequality(GREATER_THAN,v) + estimateSelectivityInequality(LESS_THAN,v);
+            default:
+                return -1.0; 
+        }
+    }
+
+    private double estimateSelectivityEquals(v) {
+        int bucket = v/this.mod;
+        int width = this.mod; 
+        int height = this.buckets[bucket];
+        return (height/width)/this.totalvalues;
+    }
+
+    private double estimateSelectivityInequality(Predicate.Op op, int v) {
+        int bucket = v/this.mod;
+        int width = this.mod; 
+        int height = this.buckets[bucket];
+        switch(op) {
+            case GREATER_THAN:
+                int b_right = (bucket+1) * this.mod
+                double bucket_f = (b_right - v)/width;
+                double selectivity = (height/this.totalvalues) * bucket_f;
+                for (int i=bucket+1;i<this.numBuckets;i++) {
+                    selectivity += this.buckets[i]/this.totalvalues;    
+                }
+                return selectivity;
+            case LESS_THAN:
+                int b_left = bucket * this.mod
+                double bucket_f = (v - b_left)/width;
+                double selectivity = (height/this.totalvalues) * bucket_f;
+                for (int i=0;i<bucket;i++) {
+                    selectivity += this.buckets[i]/this.totalvalues;    
+                }
+                return selectivity;
+        }
     }
     
     /**
