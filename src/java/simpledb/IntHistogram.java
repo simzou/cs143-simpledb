@@ -28,7 +28,7 @@ public class IntHistogram {
     	// some code goes here
         this.buckets = new int[buckets];
         this.numBuckets = buckets;
-        this.mod = Math.ciel((max - min)/buckets);
+        this.mod = (int) Math.ceil((double) (max - min)/buckets);
         this.totalValues = 0;
     }
 
@@ -56,51 +56,57 @@ public class IntHistogram {
      */
     public double estimateSelectivity(Predicate.Op op, int v) {
     	// some code goes here
-        switch(op) {
-            case EQUALS:
-            case LIKE:
+        String operator = op.toString();
+        switch(operator) {
+            case "=":
+            case "LIKE":
                 return estimateSelectivityEquals(v);
-            case GREATER_THAN:
-            case LESS_THAN:
+            case ">":
+            case "<":
                 return estimateSelectivityInequality(op,v);
-            case GREATER_THAN_OR_EQ:
-            case LESS_THAN_OR_EQ:
-                return estimateSelectivityEquals(v) + estimateSelectivityInequality(op,v);
-            case NOT_EQUALS:
-                return estimateSelectivityInequality(GREATER_THAN,v) + estimateSelectivityInequality(LESS_THAN,v);
+            case ">=":
+            case "<=":
+                return (estimateSelectivityEquals(v) + estimateSelectivityInequality(op,v));
+            case "<>":
+                return (estimateSelectivityInequality(Predicate.Op.GREATER_THAN,v) + estimateSelectivityInequality(Predicate.Op.LESS_THAN,v));
             default:
                 return -1.0; 
         }
     }
 
-    private double estimateSelectivityEquals(v) {
+    private double estimateSelectivityEquals(int v) {
         int bucket = v/this.mod;
         int width = this.mod; 
         int height = this.buckets[bucket];
-        return (height/width)/this.totalvalues;
+        return (height/width)/this.totalValues;
     }
 
     private double estimateSelectivityInequality(Predicate.Op op, int v) {
         int bucket = v/this.mod;
         int width = this.mod; 
         int height = this.buckets[bucket];
-        switch(op) {
-            case GREATER_THAN:
-                int b_right = (bucket+1) * this.mod
-                double bucket_f = (b_right - v)/width;
-                double selectivity = (height/this.totalvalues) * bucket_f;
+        double bucket_f = 0.0;
+        double selectivity = 0.0;
+        String operator = op.toString();
+        switch(operator) {
+            case ">":
+                int b_right = (bucket+1) * this.mod;
+                bucket_f = (b_right - v)/width;
+                selectivity = (height/this.totalValues) * bucket_f;
                 for (int i=bucket+1;i<this.numBuckets;i++) {
-                    selectivity += this.buckets[i]/this.totalvalues;    
+                    selectivity += this.buckets[i]/this.totalValues;    
                 }
                 return selectivity;
-            case LESS_THAN:
-                int b_left = bucket * this.mod
-                double bucket_f = (v - b_left)/width;
-                double selectivity = (height/this.totalvalues) * bucket_f;
+            case "<":
+                int b_left = bucket * this.mod;
+                bucket_f = (v - b_left)/width;
+                selectivity = (height/this.totalValues) * bucket_f;
                 for (int i=0;i<bucket;i++) {
-                    selectivity += this.buckets[i]/this.totalvalues;    
+                    selectivity += this.buckets[i]/this.totalValues;    
                 }
                 return selectivity;
+            default:
+                return -1.0;
         }
     }
     
