@@ -80,61 +80,75 @@ public class IntHistogram {
             case GREATER_THAN_OR_EQ:
                 return (estimateSelectivityEquals(v) + estimateSelectivityInequality(Predicate.Op.GREATER_THAN,v));
             case NOT_EQUALS:
-                return (estimateSelectivityInequality(Predicate.Op.GREATER_THAN,v) + estimateSelectivityInequality(Predicate.Op.LESS_THAN,v));
+                return 1.0 - estimateSelectivityEquals(v);
             default:
                 return -1.0; 
         }
     }
 
     private double estimateSelectivityEquals(int v) {
-        int bucket = (v - this.minValue)/this.mod;
+        int bucket = findBucket(v);
         if (bucket < 0)
         	return 0.0;
         if (bucket >= this.numBuckets)
         	return 0.0;
-        double height = this.buckets[bucket];
-        return height/this.totalValues;
+        int height = this.buckets[bucket];
+        return (double) ((double) height/this.mod)/this.totalValues;
     }
 
     private double estimateSelectivityInequality(Predicate.Op op, int v) {
         int bucket = findBucket(v);
-        int b_right, b_left;
+        int bucket_f, b_right, b_left, height;
         
         // v is less than the min value
         // so greater than should return everything (1.0)
         // and less than should return 0.0
-        if (bucket == -1)
+        if (bucket < 0)
         {
         	b_right = 0;
         	b_left = -1;
+            bucket_f = 0;
+            height = 0;
         }
         
         // v is greater than the max value
         // so greater than should return 0.0
         // and less than should return 1.0
-        else if (bucket == this.numBuckets)
+        else if (bucket >= this.numBuckets)
         {
         	b_right = this.numBuckets;
         	b_left = this.numBuckets-1; 
+            bucket_f = 0;
+            height = 0;
         }
         else 
         {
         	b_right = bucket+1;
         	b_left = bucket-1;
+            bucket_f = -1;
+            height = this.buckets[bucket];
         }
         double selectivity = 0.0;
         switch(op) {
             case GREATER_THAN:
+                if (bucket_f == -1) {
+                    bucket_f = ((b_right*this.mod)+this.minValue-v)/this.mod;
+                }
+                selectivity = height * bucket_f;
             	if (b_right >= this.numBuckets)
-            		return 0;
+            		return selectivity/this.totalValues;
             	for (int i = b_right; i < this.numBuckets; i++)
             	{
             		selectivity += this.buckets[i];
             	}
             	return selectivity/this.totalValues;
             case LESS_THAN:
-            	if (b_left <= 0)
-            		return 0;
+                if (bucket_f == -1) {
+                    bucket_f = (v-(b_left*this.mod)+this.minValue)/this.mod;
+                }
+                selectivity = height * bucket_f;
+            	if (b_left < 0)
+            		return selectivity/this.totalValues;
             	for (int i = b_left; i >= 0; i--)
             	{
             		selectivity += this.buckets[i];
