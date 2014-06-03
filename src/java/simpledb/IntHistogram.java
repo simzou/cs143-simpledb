@@ -8,7 +8,6 @@ public class IntHistogram {
     private int mod;
     private int totalValues;
     private int minValue;
-    private int maxValue;
 
     /**
      * Create a new IntHistogram.
@@ -101,11 +100,18 @@ public class IntHistogram {
         int bucket = findBucket(v);
         int b_right, b_left;
         
+        // v is less than the min value
+        // so greater than should return everything (1.0)
+        // and less than should return 0.0
         if (bucket == -1)
         {
         	b_right = 0;
         	b_left = -1;
         }
+        
+        // v is greater than the max value
+        // so greater than should return 0.0
+        // and less than should return 1.0
         else if (bucket == this.numBuckets)
         {
         	b_right = this.numBuckets;
