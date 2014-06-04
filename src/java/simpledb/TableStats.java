@@ -106,9 +106,62 @@ public class TableStats {
     	TupleDesc td = Database.getCatalog().getTupleDesc(tableid);
     	setMinsAndMaxs(iter, td);
     
+    	// initialize histograms
+    	for (int i = 0; i < td.numFields(); i++)
+    	{
+    		String fieldname = td.getFieldName(i);
+    		switch(td.getFieldType(i))
+    		{
+    		case INT_TYPE:
+    			IntHistogram ihist = new IntHistogram(NUM_HIST_BINS, mins.get(fieldname), maxs.get(fieldname));
+    			this.intHistograms.put(fieldname, ihist);
+    			break;
+    		case STRING_TYPE:
+    			StringHistogram shist = new StringHistogram(NUM_HIST_BINS);
+    			this.stringHistograms.put(fieldname, shist);
+    			break;
+    		}
+    	}
+    	
+    	// populate histograms
+    	populateHistograms(iter, td);
 
     }
 
+    private void populateHistograms(DbFileIterator iter, TupleDesc td)
+    {
+    	Tuple currTup;
+    	try {
+			iter.open();
+			while (iter.hasNext())
+			{
+				currTup = iter.next();
+				for (int i = 0; i < td.numFields(); i++)
+				{
+					String fieldname = td.getFieldName(i);
+					switch (td.getFieldType(i))
+					{
+					case INT_TYPE:
+						int intTupleValue = ((IntField) currTup.getField(i)).getValue();
+						this.intHistograms.get(fieldname).addValue(intTupleValue);
+						break;
+					case STRING_TYPE:
+						String stringTupleValue = ((StringField) currTup.getField(i)).getValue();
+						this.stringHistograms.get(fieldname).addValue(stringTupleValue);
+						break;
+					}
+				}
+			}
+			iter.close();
+		} catch (DbException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransactionAbortedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
     private void setMinsAndMaxs(DbFileIterator iter, TupleDesc td)
     {
     	Tuple currTup;
@@ -147,6 +200,7 @@ public class TableStats {
 	    			}
 	    		}
 	    	}
+	    	iter.close();
 		} catch (DbException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
