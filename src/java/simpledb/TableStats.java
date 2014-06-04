@@ -12,12 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * This class is not needed in implementing lab1 and lab2.
  */
 public class TableStats {
-	private int m_ioCostPerPage;
-	private HashMap<String, Integer> m_maxs;
-	private HashMap<String, Integer> m_mins;
-	private HashMap<String, IntHistogram> m_intFieldHistograms;
-	private HashMap<String, StringHistogram> m_strFieldHistograms;
-	private DbFile m_file;
+	private int iocostperpage;
+	private int numTuples;
+	private HashMap<String, Integer> maxs;
+	private HashMap<String, Integer> mins;
+	private HashMap<String, IntHistogram> intHistograms;
+	private HashMap<String, StringHistogram> stringHistograms;
+	private DbFile file;
 	
     private static final ConcurrentHashMap<String, TableStats> statsMap = new ConcurrentHashMap<String, TableStats>();
 
@@ -92,15 +93,16 @@ public class TableStats {
         // in a single scan of the table.
         // some code goes here
     	
-    	m_maxs = new HashMap<String, Integer>();
-    	m_mins = new HashMap<String, Integer>();
-    	m_intFieldHistograms = new HashMap<String, IntHistogram>();
-    	m_strFieldHistograms = new HashMap<String, StringHistogram>();
+    	maxs = new HashMap<String, Integer>();
+    	mins = new HashMap<String, Integer>();
+    	intHistograms = new HashMap<String, IntHistogram>();
+    	stringHistograms = new HashMap<String, StringHistogram>();
     	
-    	m_file = Database.getCatalog().getDatabaseFile(tableid);
+    	numTuples = 0;
+    	file = Database.getCatalog().getDatabaseFile(tableid);
     	TransactionId tid = new TransactionId();
-    	DbFileIterator iter = m_file.iterator(tid);
-    	m_ioCostPerPage = ioCostPerPage;
+    	DbFileIterator iter = file.iterator(tid);
+    	iocostperpage = ioCostPerPage;
     	TupleDesc td = Database.getCatalog().getTupleDesc(tableid);
     	setMinsAndMaxs(iter, td);
     
@@ -115,6 +117,7 @@ public class TableStats {
 	    	while (iter.hasNext())
 	    	{
 	    		currTup = iter.next();
+	    		numTuples++;
 	    		for (int i = 0; i < td.numFields(); i++)
 	    		{	    
 	    			String fieldname = td.getFieldName(i);
@@ -122,21 +125,21 @@ public class TableStats {
 	    			{
 	    			case INT_TYPE:
 	    				int fieldvalue = ((IntField) currTup.getField(i)).getValue();
-	    				if (!this.m_maxs.containsKey(fieldname))
-	    					m_maxs.put(fieldname, fieldvalue);
+	    				if (!this.maxs.containsKey(fieldname))
+	    					maxs.put(fieldname, fieldvalue);
 	    				else 
 	    				{
-	    					int currentMax = m_maxs.get(fieldname);
+	    					int currentMax = maxs.get(fieldname);
 	    					int newMax = (currentMax > fieldvalue) ? currentMax : fieldvalue;
-	    					m_maxs.put(fieldname, newMax);
+	    					maxs.put(fieldname, newMax);
 	    				}
-	    				if (!this.m_mins.containsKey(fieldname))
-	    					m_mins.put(fieldname, fieldvalue);
+	    				if (!this.mins.containsKey(fieldname))
+	    					mins.put(fieldname, fieldvalue);
 	    				else 
 	    				{
-	    					int currentMin = m_mins.get(fieldname);
+	    					int currentMin = mins.get(fieldname);
 	    					int newMin = (currentMin < fieldvalue) ? currentMin : fieldvalue;
-	    					m_mins.put(fieldname, newMin);
+	    					mins.put(fieldname, newMin);
 	    				}
 	    				break;
 	    			case STRING_TYPE:
@@ -169,7 +172,7 @@ public class TableStats {
         // some code goes here
         // replace this.file with the db_file variable
         // replace this.iocostperpage
-        return this.file.numPages() * this.iocostperpage;
+        return ((HeapFile)this.file).numPages() * this.iocostperpage;
     }
 
     /**
@@ -184,7 +187,7 @@ public class TableStats {
     public int estimateTableCardinality(double selectivityFactor) {
         // some code goes here
         // Assuming we can get number of tuples from the scan
-        return (int) this.numTuples * selectivityFactor;
+        return (int) (this.numTuples * selectivityFactor);
     }
 
     /**
@@ -222,11 +225,12 @@ public class TableStats {
         if (constant.getType().equals(Type.STRING_TYPE)) {
             String value = ((StringField) constant).getValue();
             StringHistogram hist = this.stringHistograms.get(field);
+            return hist.estimateSelectivity(op,value);
         } else {
             int value = ((IntField) constant).getValue();
             IntHistogram hist =  this.intHistograms.get(field);
+            return hist.estimateSelectivity(op,value);
         }
-        return hist.estimateSelectivity(op,value);
     }
 
     /**
@@ -234,8 +238,7 @@ public class TableStats {
      * */
     public int totalTuples() {
         // some code goes here
-        return this.numTuples
-        return 0;
+        return this.numTuples;
     }
 
 }
