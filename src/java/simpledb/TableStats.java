@@ -167,7 +167,9 @@ public class TableStats {
      */
     public double estimateScanCost() {
         // some code goes here
-        return 0;
+        // replace this.file with the db_file variable
+        // replace this.iocostperpage
+        return this.file.numPages() * this.iocostperpage;
     }
 
     /**
@@ -181,7 +183,8 @@ public class TableStats {
      */
     public int estimateTableCardinality(double selectivityFactor) {
         // some code goes here
-        return 0;
+        // Assuming we can get number of tuples from the scan
+        return (int) this.numTuples * selectivityFactor;
     }
 
     /**
@@ -214,7 +217,16 @@ public class TableStats {
      */
     public double estimateSelectivity(int field, Predicate.Op op, Field constant) {
         // some code goes here
-        return 1.0;
+        // this.intHistograms = int type histogram from scan
+        // this.stringHistograms = string type histogram from scan
+        if (constant.getType().equals(Type.STRING_TYPE)) {
+            String value = ((StringField) constant).getValue();
+            StringHistogram hist = this.stringHistograms.get(field);
+        } else {
+            int value = ((IntField) constant).getValue();
+            IntHistogram hist =  this.intHistograms.get(field);
+        }
+        return hist.estimateSelectivity(op,value);
     }
 
     /**
@@ -222,6 +234,7 @@ public class TableStats {
      * */
     public int totalTuples() {
         // some code goes here
+        return this.numTuples
         return 0;
     }
 
