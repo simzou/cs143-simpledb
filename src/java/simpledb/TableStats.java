@@ -12,7 +12,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * This class is not needed in implementing lab1 and lab2.
  */
 public class TableStats {
-
+	private int m_ioCostPerPage;
+	private HashMap<String, Integer> m_maxs;
+	private HashMap<String, Integer> m_mins;
+	private HashMap<String, IntHistogram> m_intFieldHistograms;
+	private HashMap<String, StringHistogram> m_strFieldHistograms;
+	private DbFile m_file;
+	
     private static final ConcurrentHashMap<String, TableStats> statsMap = new ConcurrentHashMap<String, TableStats>();
 
     static final int IOCOSTPERPAGE = 1000;
@@ -85,8 +91,68 @@ public class TableStats {
         // necessarily have to (for example) do everything
         // in a single scan of the table.
         // some code goes here
+    	
+    	m_maxs = new HashMap<String, Integer>();
+    	m_mins = new HashMap<String, Integer>();
+    	m_intFieldHistograms = new HashMap<String, IntHistogram>();
+    	m_strFieldHistograms = new HashMap<String, StringHistogram>();
+    	
+    	m_file = Database.getCatalog().getDatabaseFile(tableid);
+    	TransactionId tid = new TransactionId();
+    	DbFileIterator iter = m_file.iterator(tid);
+    	m_ioCostPerPage = ioCostPerPage;
+    	TupleDesc td = Database.getCatalog().getTupleDesc(tableid);
+    	setMinsAndMaxs(iter, td);
+    
+
     }
 
+    private void setMinsAndMaxs(DbFileIterator iter, TupleDesc td)
+    {
+    	Tuple currTup;
+    	try {
+			iter.open();
+	    	while (iter.hasNext())
+	    	{
+	    		currTup = iter.next();
+	    		for (int i = 0; i < td.numFields(); i++)
+	    		{	    
+	    			String fieldname = td.getFieldName(i);
+	    			switch (td.getFieldType(i))
+	    			{
+	    			case INT_TYPE:
+	    				int fieldvalue = ((IntField) currTup.getField(i)).getValue();
+	    				if (!this.m_maxs.containsKey(fieldname))
+	    					m_maxs.put(fieldname, fieldvalue);
+	    				else 
+	    				{
+	    					int currentMax = m_maxs.get(fieldname);
+	    					int newMax = (currentMax > fieldvalue) ? currentMax : fieldvalue;
+	    					m_maxs.put(fieldname, newMax);
+	    				}
+	    				if (!this.m_mins.containsKey(fieldname))
+	    					m_mins.put(fieldname, fieldvalue);
+	    				else 
+	    				{
+	    					int currentMin = m_mins.get(fieldname);
+	    					int newMin = (currentMin < fieldvalue) ? currentMin : fieldvalue;
+	    					m_mins.put(fieldname, newMin);
+	    				}
+	    				break;
+	    			case STRING_TYPE:
+	    				break;
+	    			}
+	    		}
+	    	}
+		} catch (DbException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransactionAbortedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
     /**
      * Estimates the cost of sequentially scanning the file, given that the cost
      * to read a page is costPerPageIO. You can assume that there are no seeks
