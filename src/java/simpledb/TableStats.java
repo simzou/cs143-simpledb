@@ -19,6 +19,7 @@ public class TableStats {
 	private HashMap<String, IntHistogram> intHistograms;
 	private HashMap<String, StringHistogram> stringHistograms;
 	private DbFile file;
+	private TupleDesc td;
 	
     private static final ConcurrentHashMap<String, TableStats> statsMap = new ConcurrentHashMap<String, TableStats>();
 
@@ -103,7 +104,7 @@ public class TableStats {
     	TransactionId tid = new TransactionId();
     	DbFileIterator iter = file.iterator(tid);
     	iocostperpage = ioCostPerPage;
-    	TupleDesc td = Database.getCatalog().getTupleDesc(tableid);
+    	this.td = Database.getCatalog().getTupleDesc(tableid);
     	setMinsAndMaxs(iter, td);
     
     	// initialize histograms
@@ -276,13 +277,14 @@ public class TableStats {
         // some code goes here
         // this.intHistograms = int type histogram from scan
         // this.stringHistograms = string type histogram from scan
+    	String fieldname = this.td.getFieldName(field);
         if (constant.getType().equals(Type.STRING_TYPE)) {
             String value = ((StringField) constant).getValue();
-            StringHistogram hist = this.stringHistograms.get(field);
+            StringHistogram hist = this.stringHistograms.get(fieldname);
             return hist.estimateSelectivity(op,value);
         } else {
             int value = ((IntField) constant).getValue();
-            IntHistogram hist =  this.intHistograms.get(field);
+            IntHistogram hist =  this.intHistograms.get(fieldname);
             return hist.estimateSelectivity(op,value);
         }
     }

@@ -134,7 +134,7 @@ public class IntHistogram {
                 if (bucket_f == -1) {
                     bucket_f = ((b_right*this.mod)+this.minValue-v)/this.mod;
                 }
-                selectivity = height * bucket_f;
+                selectivity = (height * bucket_f) / this.totalValues;
             	if (b_right >= this.numBuckets)
             		return selectivity/this.totalValues;
             	for (int i = b_right; i < this.numBuckets; i++)
@@ -146,7 +146,7 @@ public class IntHistogram {
                 if (bucket_f == -1) {
                     bucket_f = (v-(b_left*this.mod)+this.minValue)/this.mod;
                 }
-                selectivity = height * bucket_f;
+                selectivity = (height * bucket_f) / this.totalValues;
             	if (b_left < 0)
             		return selectivity/this.totalValues;
             	for (int i = b_left; i >= 0; i--)
