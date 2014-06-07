@@ -44,4 +44,96 @@ Exercise 4: JoinOptimizer.java
 
 Exercise 5: IMDB database queries
 
-Notes: I'm not sure how many hours we spent on this but it was probably around 10 to 15. I had some trouble understanding what the first exercise was asking us to do and we had some trouble implementing IntHistogram since we weren't accounting for values that did not fit in any buckets. I ran into different kinds of errors (too many files open) trying to execute the IMDB queries. Our code currently passes test and systemtest and we made no changes to the API.
+We ran the following on the 0.1% database
+
+SimpleDB> select d.fname, d.lname
+SimpleDB> from Actor a, Casts c, Movie_Director m, Director d
+SimpleDB> where a.id=c.pid and c.mid=m.mid and m.did=d.id
+SimpleDB> and a.fname='John' and a.lname='Spicer';
+Started a new transaction tid = 6
+Added scan of table a
+Added scan of table c
+Added scan of table m
+Added scan of table d
+Added join between a.id and c.pid
+Added join between c.mid and m.mid
+Added join between m.did and d.id
+Added select list field d.fname
+Added select list field d.lname
+[d:m, m:c, a:c]
+PATH SO FAR = [d:m]
+PATH SO FAR = [d:m, m:c]
+PATH SO FAR = [d:m, a:c, m:c]
+The query plan is:
+                            π(d.fname,d.lname),card:3008
+                            |
+                            ⨝(a.id=c.pid),card:3008
+  __________________________|___________________________
+  |                                                    |
+  σ(a.lname=Spicer),card:1                             ⨝(m.mid=c.mid),card:3008
+  |                                    ________________|_________________
+  σ(a.fname=John),card:1               |                                |
+  |                                    ⨝(d.id=m.did),card:278           |
+  |                           _________|_________                       |
+  |                           |                 |                     scan(Casts c)
+scan(Actor a)               scan(Director d)  scan(Movie_Director m)
+
+d.fname d.lname
+------------------------
+Chris   Malazdrewicz
+
+Thomas  Parkinson
+
+Alain   Zaloum
+
+
+ 3 rows.
+Transaction 6 committed.
+----------------
+13.83 seconds
+
+This was the query we ran on the 1% database. It selects all the directors and movie names with actors named Ryan and 
+directors named Ryan.
+
+SimpleDB> select m.name, d.fname, d.lname from Movie m, Movie_Director md, Casts c, Actor a, Director d where md.mid=m.id and
+SimpleDB> md.did=d.id and c.mid=m.id and c.pid=a.id and a.fname='Ryan' and d.fname='Ryan';
+Started a new transaction tid = 7
+Added scan of table m
+Added scan of table md
+Added scan of table c
+Added scan of table a
+Added scan of table d
+Added join between md.mid and m.id
+Added join between md.did and d.id
+Added join between c.mid and m.id
+Added join between c.pid and a.id
+Added select list field m.name
+Added select list field d.fname
+Added select list field d.lname
+[m:md, d:md, m:c, c:a]
+PATH SO FAR = [m:md]
+PATH SO FAR = [d:md, m:md]
+PATH SO FAR = [m:c, d:md, m:md]
+PATH SO FAR = [m:c, c:a, d:md, m:md]
+The query plan is:
+                                                               π(m.name,d.fname,d.lname),card:1
+                                                               |
+                                                               ⨝(c.pid=a.id),card:1
+                                           ____________________|____________________
+                                           |                                       |
+                                           ⨝(m.id=c.mid),card:29729                σ(a.fname=Ryan),card:1
+                  _________________________|_________________________              |
+                  |                                                 |              |
+                  ⨝(d.id=md.did),card:2791                          |              |
+  ________________|_________________                                |              |
+  |                                |                                |              |
+  σ(d.fname=Ryan),card:1           ⨝(m.id=md.mid),card:2791         |              |
+  |                         _______|________                        |              |
+scan(Director d)            |              |                        |            scan(Actor a)
+                          scan(Movie m)  scan(Movie_Director md)  scan(Casts c)
+
+m.name  d.fname d.lname
+-----------------------------------
+'LTD.'  Ryan    Arnold
+
+Notes: We're not sure how many hours we spent on this but it was probably around 20-25. We had some trouble understanding what the first exercise was asking us to do and we had some trouble implementing IntHistogram since we weren't accounting for values that did not fit in any buckets. We ran into different kinds of errors (too many files open) trying to execute the IMDB queries, but that was because we forgot to close our RandomAccessFile accessors in HeapFile.java. Our code currently passes all tests and systemtest and we made no changes to the API.
