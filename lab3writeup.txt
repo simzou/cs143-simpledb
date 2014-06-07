@@ -42,6 +42,17 @@ The TableStats constructor makes use of several HashMaps. It first iterates thro
 
 Exercise 4: JoinOptimizer.java
 
+For join cost estimation we are assuming that we're using an NL join; we used the formula 
+
+joincost(t1 join t2) = scancost(t1) + ntups(t1) x scancost(t2) //IO cost + ntups(t1) x ntups(t2)  //CPU cost 
+
+into code, using the various parameters that our function was given. 
+In estimating the join cardinality, we set the default return to be the cross product * .4 because it's a bit 
+higher than 30% but still provides a good estimation.
+
+For join ordering, we followed the provided pseudocode to implement the function. We didn't run into too many
+problems with the code, since we were given a few helper functions that were of the utmost importance.
+
 Exercise 5: IMDB database queries
 
 We ran the following on the 0.1% database
@@ -135,5 +146,7 @@ scan(Director d)            |              |                        |           
 m.name  d.fname d.lname
 -----------------------------------
 'LTD.'  Ryan    Arnold
+
+Boybrand: A Documentary Ryan    McClure
 
 Notes: We're not sure how many hours we spent on this but it was probably around 20-25. We had some trouble understanding what the first exercise was asking us to do and we had some trouble implementing IntHistogram since we weren't accounting for values that did not fit in any buckets. We ran into different kinds of errors (too many files open) trying to execute the IMDB queries, but that was because we forgot to close our RandomAccessFile accessors in HeapFile.java. Our code currently passes all tests and systemtest and we made no changes to the API.
