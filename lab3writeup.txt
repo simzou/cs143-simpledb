@@ -33,3 +33,15 @@ Step 4: simpledb.Parser.parseQueryLogicalPlan()
 	- Finally, the logical plan is returned
 
 Exercise 2: IntHistogram.java
+
+IntHistogram is implemented according to the spec, using an equi-width bucket based approach that uses an array of integers with the count of how many values fall in each bucket. The formulas for estimating the selectivity of a given operation use the formulas given in the spec and avgSelectivity is not implemented. Private member functions were written to handle inequality and equality operators and the rest of the operators were defined in terms of them.
+
+Exercise 3: TableStats.java
+
+The TableStats constructor makes use of several HashMaps. It first iterates through the whole given table to find the maxs and mins of each field value, which are stored in two separate HashMaps that map fieldnames to their max and min. It then creates two more HashMaps, mapping fieldnames to histograms (one for Ints and one for Strings). We then iterate through the file again, adding the values to the appropriate histograms and then write the appropriate methods using histogram's estimateSelectivity and given formulas in the spec for estimateTableCardinality and scanCost. avgSelectivity is not implemented.
+
+Exercise 4: JoinOptimizer.java
+
+Exercise 5: IMDB database queries
+
+Notes: I'm not sure how many hours we spent on this but it was probably around 10 to 15. I had some trouble understanding what the first exercise was asking us to do and we had some trouble implementing IntHistogram since we weren't accounting for values that did not fit in any buckets. I ran into different kinds of errors (too many files open) trying to execute the IMDB queries. Our code currently passes test and systemtest and we made no changes to the API.
