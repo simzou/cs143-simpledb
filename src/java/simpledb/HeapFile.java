@@ -81,6 +81,7 @@ public class HeapFile implements DbFile {
             }
             f.seek(offset);
             f.readFully(data);
+            f.close();
             return new HeapPage((HeapPageId) pid, data);
         } catch (FileNotFoundException e) {
             System.err.println("FileNotFoundException: " + e.getMessage());
