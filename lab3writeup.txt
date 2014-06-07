@@ -1,0 +1,35 @@
+Collaborators: 
+
+Calvin Chan: 304144970
+Simon Zou: 804347338
+Ethan Schreiber: The iterator in HeapFile.java is the one from the lab1 solution by Ethan/the TA. 
+
+Exercise 1: Life of a SimpleDB query
+
+Step 1: simpledb.Parser.main() and simpledb.Parser.start() simpledb.Parser.main() is the entry point for the SimpleDB system. It calls simpledb.Parser.start(). The latter performs three main actions:
+
+	- It populates the SimpleDB catalog from the catalog text file provided by the user as argument (Database.getCatalog().loadSchema(argv[0]);).
+	- For each table defined in the system catalog, it computes statistics over the data in the table by calling: TableStats.computeStatistics(), which for each table does: TableStats s = new TableStats(tableid, IOCOSTPERPAGE);
+	- It processes the statements submitted by the user (processNextStatement(new ByteArrayInputStream(statementBytes));)
+
+Step 2: simpledb.Parser.processNextStatement() 
+This method takes two key actions:
+
+	- First, it gets a physical plan for the query by invoking handleQueryStatement((ZQuery)s);
+	- Then it executes the query by calling query.execute();
+
+Step 3: simpledb.Parser.handleQueryStatement() 
+
+	- First, it creates a new Query object
+	- The program gets a logical plan using parseQueryLogicalPlan(), and a physical plan is instantiated from the logical plan and if the plan is valid, the plan is printed out.
+
+Step 4: simpledb.Parser.parseQueryLogicalPlan()
+
+	- First, the function gets all the tables in the FROM clause of the query plan and adds it to the scan.
+	- Then, if there is a WHERE clause, which uses the processExpression function to add join conditions
+	- Then, if there is a GROUP BY clause, it checks to make sure there is only one (multiple conditions are unsupported) and then does the grouping
+	- Then, it looks at the SELECT clause, which picks out aggregate fields and checks for query validity
+	- If there is an ORDER BY clause, the results of the query are sorted
+	- Finally, the logical plan is returned
+
+Exercise 2: IntHistogram.java
